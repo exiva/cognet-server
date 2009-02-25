@@ -1,0 +1,49 @@
+
+Cognet Chat Engine  v0.1
+------------------------
+
+This application is a front-end for a irc proxy server called cognetd.
+The server handles virtually all of the logic and all the client knows
+about is how to display messages in windows and send user commands to
+the server.  
+
+The server caches all messages (up to 100 per channel, and unlimited
+per user), even if the client is not connected.
+
+The following commands are understood by the client:
+
+/query <name>    creates a new window named <name> and shows it
+/win <name>      switch to window <name> if it exists
+/zap             log out of the server
+/bind <number>   binds a quickkey (0-9) to this window
+/clear           erases the contents of the current window
+                 (on the server as well as the client)
+
+Any other commands are sent to the server for processing.
+The server knows a number of ircii-style commands like:
+/join, /leave, /part, /msg, /nick, /topic
+
+Anything that starts with two slashes will be passed to the
+irc connection raw (eg  "//privmsg #uiuc :I like cheese!" )
+
+Anything with no leading slash is treated as a message to the
+channel/user that is the current window name.
+
+The application menu lists all active windows (windows with 
+messages that have arrived since you were there last are marked
+with an arrow glyph).  There are a few handy shortcuts not shown
+in the menu (for space reasons):
+
+MENU-n          cycle to the next window
+MENU-p          cycle to the previous window
+MENU-,          jump to a window with new messages
+
+Currently, server messages show up in the special "%server" window
+(which you can never delete) and messages the proxy doesn't know 
+how to parse show up in the special "%unknown" window.
+
+The ugly black bar that appears below the title bar is to let you
+know about messages in other windows.  Indicators like "[3]" mean
+that there is a new message in a window bound to the number in 
+the brackets.  A "[?]" indicator means that there are new messages
+in some unbound window (check the menu for details).

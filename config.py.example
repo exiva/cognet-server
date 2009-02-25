@@ -1,0 +1,73 @@
+# -*- python -*-
+## $Id: config.py.example,v 1.1.1.1 2004/09/29 19:13:08 rit Exp $
+
+# Copyright (c) 2004 Brendan W. McAdams and the Cognet Contributors
+# Copyright 2003 Brian J. Swetland
+# Copyright 2003 Daniel Grobe Sachs
+# Enhancements - Kenneth B. Foreman, Leigh L. Klotz Jr, Nicholas Riley, Brendan W. McAdams
+# See LICENSE for redistribution terms
+
+## These are pretty much all the user serviceable parts.
+## Check xmain.py if you're not sure what they mean.
+##
+## Copy this file to config.py and uncomment anything you
+## want to change from the default.
+
+import xuser
+
+
+PORT = 7893 # default cog port is 7890
+SAVESTATE = 0
+
+# If you have multiple ips/virtual hosts this allows you to use them
+# The way it works is it takes the IP that $IRCHOST resolves to, 
+# And if that IP is bound to an interface on your box,
+# Cog makes all outgoing IRC connections on that interface.
+# Your reverse lookup can then be tweaked based on that ;)
+# NOTE: There's currently a user config level hack
+# that copies this in to each user.  you can change 
+# host of individual users, consequently.  
+# ... this may help defeat clone bans
+
+#IRCHOST = 'cognet.sf.net'
+IRCHOST = ''
+
+if (IRCHOST != '') :
+	print "Global IRCHOST Set to ", IRCHOST	
+else:
+	print "Global IRCHOST Not set"
+
+
+ALLOWED_ADDRS = [
+    '127.0.0.1', # localhost
+    '199.106.69.107', # danger developer nat
+    '63.241.65.15', # tmobile user nat
+    '63.241.65.15', # tmo prod
+    '199.106.69.146', # danger trial nat (both trial.danger and sidekick.trial.danger)
+]
+
+# Add as many users as you need
+# (use the mkpasswd.py tool to generate the password hashes)
+#
+xuser.User(
+    # cognet settings
+    name='guest', # authentication from cognet-client
+    passwd='570a90bfbf8c7eab5dc5d4e26832d5b1', # fred
+    def_queuelen=500, # messages to buffer
+    startup_cmds=['urlgrab','timestamp','irc'], # commands (minus /) to run on startup
+    # timestamp settings [use /timestamp or startup_cmds=('timestamp', ...) above]
+    timestamp=1, # display timestamp to the left of messages
+    timeformat='%H:%M:%S', # format for timestamps (%H:%M.%S yields HH:MM.SS)
+    # turn settings
+    turncmd='ssh fnord br -x /dev/tty01', # command to invoke br
+    # IRC settings
+    ircserver='irc.efnet.net',
+    ircport=6667,
+    ircuser='coguser', # user@
+    ircname='via hiptop ... [www.sf.net/projects/cognet]', # (...) "real name"
+    ircnick='cogN00b[ht2]', # nickname
+    grabber=1, # URL/email grabber -> 'grabber' window
+    autorejoin=1, # reconnect/rejoin when IRC server connection drops
+    usermsgs=1, # display join, part, quit, mode messages
+    irchost = IRCHOST, # this uses the ''global'' irchost..or you can set one for just this user
+)

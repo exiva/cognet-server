@@ -1,0 +1,138 @@
+The basics:
+
+You'll need Python 2.2.2 to use this server. It's only been tested
+on UNIX but may work on other platforms.
+
+Before you begin, copy config.py.example to config.py and edit to
+suit. Use "python mkpasswd.py <password>" to make a hash of a
+password for the password field of the config file.
+
+Start the server with "python xmain.py".
+
+Enter server level commands in the "% server" window. It understands:
+
+/start <module> <command>		start a module
+/startas <name> <module> <command>	start a module overriding name
+/stop <module>				stop a module
+
+/<module> <command>	issue a command to module <module>
+			(starts that module if not running)
+
+Modules are files named in the form xmod_<module>.py. Several are
+included. These include:
+
+/irc			launch the irc module
+/telnet <host> <port> 	launch the telnet module and connect
+/rpn			launch an RPN calculator
+/timestamp <on | off | format>   configure timestamp display;
+	       	                 see strftime(3) for format
+/urlgrab		Enable URL grabbing (populates client Link menu)
+
+
+The irc module understands most basic commands (/join, /nick, /me,
+and such).  Anything prefixed with // (i.e., //mode) will get the
+first / lopped off and the rest sent to the server.
+
+An important special case is that anything that's not otherwise
+interpreted as a command gets sent to the "send" module, which
+uses the python eval() command to evaluate what is sent. This
+can be used to execute arbitrary commands on the remote server.
+Anyone running a multi-user installation of the cognet server
+MUST delete xmod_send.py before allowing users to connect. 
+
+/startas allows a single module to be loaded multiple times.
+This is particularly useful for the irc module; for instance,
+	/irc irc.catch22.org 
+	/startas EF irc irc.efnet.net
+will start an IRC module as "IRC" connecting to byxnet, and
+another instance IRC module as "EF" connected to EFnet.  The
+module name is used to identify modules in the window names;
+all windows created by that application will be prefaced by
+the corresponding module name. 
+
+Note that once a module is loaded with an alternate name, 
+/start <that name> will not attempt to load the module off
+disk (it will report an error), and /<module> <command>
+will dispatch commands to the module by its alternate name
+and not its native name. 
+
+Additional IRC controls (same as in config.py):
+
+/set autorejoin on | off    [on]
+/set usermsgs on | off      [on]
+
+- autorejoin will autoconnect to irc servers and rejoin channels
+  should connection drop
+- grabber controls the collection of any url/email in any window,
+  listing to 'Grabber' window
+- usermsgs controls display of JOIN, PART, QUIT, and MODE messages
+
+
+The telnet module seems to have problems with line endings but should
+work for most MUCKs and other such beasts.
+
+
+=======================================================================
+The following information is obselete. Eventually I'll write real
+documentation but you'll have to puzzle most stuff out on your own
+for now. The protocol information is still valid, which is why it
+was included.
+
+.... 
+Eventually there will be documentation here.
+
+
+This is intended to be a server that will maintain some number of irc
+sessions and allow a lightweight client to connect to access an irc
+session as needed.
+
+The first field (serial number) may be omitted or ignored.  It allows
+for resynchronization, so the client should keep track of the last 
+serial number it has seen for when it reconnects
+
+
+client protocol,  server->client:
+  <serial>:<tag>:<source>:<target>:<text>
+
+  #:dmsg:nick:#channel:text          # display message in target window
+  #:smsg:nick:yournick:text          # display message in source window
+  #:dmsg:yournick:nick:text          # display message in target window
+  #:dmsg/act:nick:#channel:text      # display emote'd message in target window
+  #:clear:window:                    # erase all lines from window 
+  #:info:window:text                 # display server message
+  #:fail:window:text                 # display error message
+  #:repl:window:text                 # display command reply
+  #:sync:token:                      # client should keep token for next serial
+
+special windows:
+  %server -- messages from the server
+  %unknown -- irc messages that were not parsed
+
+client protocol,  client->server:
+  <serial>:<tag>:<target>:<text>
+
+  :serial:serialnumber:token         # indicates last serial number and token seen
+                                     # (send before logging in)
+  :auth:username:password            # log in
+
+  In all of these, 'ctxt' is the current window the command
+  was typed in.  Lines without a leading '/' get transformed into
+  a send command, all others lose the '/' and are split so that the
+  text between the '/' and the first whitespace become the 'tag',
+  the current window is the 'ctxt', and the rest of the line is the
+  'text' 
+
+  :send:ctxt:text                    # send text to target (nick or channel)
+  :nick:ctxt:newnick                 # change to a new nick
+  :msg:ctxt:target message...        # send message to target
+  :me:ctxt:emote                     # emote in a context
+  :join:ctxt:channel                 # join a channel
+  :part:ctxt:channel                 # leave a channel (or ctxt if channel is '')
+  :leave:ctxt:channel                # leave a channel (or ctxt if channel is '')
+  :topic:ctxt:new topic              # set the topic (in channel ctxt)
+  :clear:ctxt:                       # erase any stored messages for ctxt
+  :bye:ctxt:                         # logoff
+  :connect:ctxt:                     # connect to irc server if offline
+  :set:ctxt:name value               # set server config variable
+
+
